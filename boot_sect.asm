@@ -1,22 +1,21 @@
 [org 0x7c00] ; set origin to 0x7c00
-mov ah, 0x0e ; teletype BIOS routine
 
-call print_string ; print string
-jmp $
+mov bx, HELLO_MSG ; load address of HELLO_MSG into dx
+call print_string ; call print_string function
 
-print_string:
-    loop:
-        mov al, [my_string + bx] ; get character from string
-        cmp al, 0 ; check if null terminator
-        je end ; go to end
-        int 0x10 ; print character
-        inc bx ; increment index
-        jmp loop ; repeat
-    end:
-        ret
+mov bx, GOODBYE_MSG ; load address of GOODBYE_MSG into dx
+call print_string ; call print_string function
 
-my_string:
-    db 'Booting OS', 0 ; string with null terminator
+jmp $ ; hang
+
+%include "print_string.asm" ; include print_string function
+
+; Data
+HELLO_MSG:
+    db 'Booting OS', 13, 10, 0 ; string + CR + LF + null terminator
+
+GOODBYE_MSG:
+    db 'Quitting', 0 ; string with null terminator
 
 times 510-($-$$) db 0 ; pad with zeros until 510 bytes (last 2 bytes are for 0xaa55)
 dw 0xaa55 ; define word
