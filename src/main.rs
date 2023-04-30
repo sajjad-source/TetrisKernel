@@ -1,7 +1,9 @@
 #![no_std]
 #![no_main]
+#![feature(abi_x86_interrupt)]
 
 mod vga_buffer;
+mod keyboard_interrupt;
 use core::panic::PanicInfo;
 
 #[no_mangle]
