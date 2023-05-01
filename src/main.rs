@@ -1,16 +1,16 @@
 #![no_std]
 #![no_main]
-#![feature(abi_x86_interrupt)]
 
 mod vga_buffer;
-mod keyboard_interrupt;
+mod interrupts;
 use core::panic::PanicInfo;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    // println!("Hello World{}", "!");
-    let char = keyboard_interrupt::getch();
-    println!("{}", char);
+    println!("Booting...\n");
+    let line = interrupts::getline();
+    println!("{:?}", line);
+    println!("Quitting...\n");
     loop {}
 }
 
