@@ -3,16 +3,21 @@
 mov bx, HELLO_MSG ; load address of HELLO_MSG into dx
 call print_string ; call print_string function
 
+mov ah, 0x00 ; set up for keyboard read
+int 0x16 ; blocking read from keyboard
+mov ah, 0x0e
+int 0x10 ; print character
+
 mov bx, GOODBYE_MSG ; load address of GOODBYE_MSG into dx
 call print_string ; call print_string function
 
 jmp $ ; hang
 
-%include "print_string.asm" ; include print_string function
+%include "asm/print_string.asm" ; include print_string function
 
 ; Data
 HELLO_MSG:
-    db 'Booting OS', 13, 10, 0 ; string + CR + LF + null terminator
+    db 'Booting BoGoOS', 13, 10, 0 ; string + CR + LF + null terminator
 
 GOODBYE_MSG:
     db 'Quitting', 0 ; string with null terminator
