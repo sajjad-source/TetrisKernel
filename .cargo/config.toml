@@ -1,4 +1,0 @@
-[target.i686-unknown-linux-gnu]
-rustflags = [
-  "-C", "link-arg=-Tlinker_stage2.ld",
-]
