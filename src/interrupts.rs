@@ -34,16 +34,25 @@ pub fn getch(prev_scancode: &mut u8) -> Option<char> {
     None
 }
 
-const BUFFER_SIZE: usize = 80;
+const BUFFER_SIZE: usize = 1600;
 
-pub fn getline() -> ! {
+pub fn getline() -> [char; BUFFER_SIZE] {
     let mut prev_scancode: u8 = 0;
+    let mut buffer: [char; BUFFER_SIZE] = ['\0'; BUFFER_SIZE];
+    let mut idx = 0;
     loop {
         match getch(&mut prev_scancode) {
             Some(ch) => {
+                if ch == '\n' {
+                    break;
+                }
+
                 print!("{}", ch);
+                buffer[idx] = ch;
+                idx += 1;
             }
             None => {}
         }
     }
+    buffer 
 }
