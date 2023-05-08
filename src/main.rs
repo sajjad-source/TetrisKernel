@@ -4,13 +4,15 @@
 mod vga_buffer;
 mod interrupts;
 use core::panic::PanicInfo;
+use crate::vga_buffer::{change_color, Color};
+
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    change_color(Color::Red);
     println!("Booting...\n");
     let line = interrupts::getline();
-    println!("{:?}", line);
-    println!("Quitting...\n");
+    println!("\nQuitting...\n");
     loop {}
 }
 

@@ -27,7 +27,7 @@ pub enum Color {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
     fn new(foreground: Color, background: Color) -> ColorCode {
@@ -52,7 +52,7 @@ struct Buffer {
 
 pub struct Writer {
     column_position: usize,
-    color_code: ColorCode,
+    pub color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
 
@@ -122,7 +122,7 @@ impl fmt::Write for Writer {
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        color_code: ColorCode::new(Color::White, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) }, // 0xb8000 is the start of the VGA buffer
     });
 }
@@ -142,4 +142,8 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+pub fn change_color(color: Color) {
+    WRITER.lock().color_code = ColorCode::new(color, Color::Black);
 }
