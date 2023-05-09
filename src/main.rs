@@ -4,13 +4,13 @@
 mod vga_buffer;
 mod keyboard;
 mod tetris;
-use tetris::tetris;
+use tetris::game;
 use core::panic::PanicInfo;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Booting...\n");
-    tetris::run();
+    game::run();
     println!("\nQuitting...\n");
     loop {}
 }

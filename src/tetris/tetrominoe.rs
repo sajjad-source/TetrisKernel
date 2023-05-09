@@ -1,12 +1,9 @@
-use oorandom::Rand32;
-use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
+use crate::tetris::tetlib::EMP;
+use crate::tetris::lcg::LCG;
 
-use crate::tetlib::EMP;
-
-#[derive(Serialize, Deserialize, Clone, Hash)]
+#[derive(Clone)]
 pub struct Tetrominoe {
-    pub shape: Vec<Vec<char>>,
+    pub shape: [[char; 4]; 4],
     pub row: usize,
     pub col: usize,
     pub ptype: char,
@@ -16,7 +13,7 @@ pub struct Tetrominoe {
 impl Tetrominoe {
     pub fn new() -> Tetrominoe {
         Tetrominoe {
-            shape: Vec::new(),
+            shape: [[EMP; 4]; 4],
             row: 0,
             col: 0,
             ptype: ' ',
@@ -27,53 +24,53 @@ impl Tetrominoe {
     pub fn set(&mut self, shape: char) -> &mut Self {
         self.ptype = shape;
         let shape = match shape {
-            'I' => vec![
-                vec![EMP, 'a', EMP, EMP],
-                vec![EMP, 'a', EMP, EMP],
-                vec![EMP, 'a', EMP, EMP],
-                vec![EMP, 'a', EMP, EMP],
+            'I' => [
+                [EMP, 'a', EMP, EMP],
+                [EMP, 'a', EMP, EMP],
+                [EMP, 'a', EMP, EMP],
+                [EMP, 'a', EMP, EMP],
             ],
 
-            'J' => vec![
-                vec![EMP, 'a', EMP, EMP],
-                vec![EMP, 'a', EMP, EMP],
-                vec!['a', 'a', EMP, EMP],
-                vec![EMP, EMP, EMP, EMP],
+            'J' => [
+                [EMP, 'a', EMP, EMP],
+                [EMP, 'a', EMP, EMP],
+                ['a', 'a', EMP, EMP],
+                [EMP, EMP, EMP, EMP],
             ],
 
-            'L' => vec![
-                vec![EMP, 'a', EMP, EMP],
-                vec![EMP, 'a', EMP, EMP],
-                vec![EMP, 'a', 'a', EMP],
-                vec![EMP, EMP, EMP, EMP],
+            'L' => [
+                [EMP, 'a', EMP, EMP],
+                [EMP, 'a', EMP, EMP],
+                [EMP, 'a', 'a', EMP],
+                [EMP, EMP, EMP, EMP],
             ],
 
-            'O' => vec![
-                vec![EMP, EMP, EMP, EMP],
-                vec![EMP, 'a', 'a', EMP],
-                vec![EMP, 'a', 'a', EMP],
-                vec![EMP, EMP, EMP, EMP],
+            'O' => [
+                [EMP, EMP, EMP, EMP],
+                [EMP, 'a', 'a', EMP],
+                [EMP, 'a', 'a', EMP],
+                [EMP, EMP, EMP, EMP],
             ],
 
-            'Z' => vec![
-                vec![EMP, EMP, EMP, EMP],
-                vec!['a', 'a', EMP, EMP],
-                vec![EMP, 'a', 'a', EMP],
-                vec![EMP, EMP, EMP, EMP],
+            'Z' => [
+                [EMP, EMP, EMP, EMP],
+                ['a', 'a', EMP, EMP],
+                [EMP, 'a', 'a', EMP],
+                [EMP, EMP, EMP, EMP],
             ],
 
-            'T' => vec![
-                vec![EMP, EMP, EMP, EMP],
-                vec![EMP, 'a', EMP, EMP],
-                vec!['a', 'a', 'a', EMP],
-                vec![EMP, EMP, EMP, EMP],
+            'T' => [
+                [EMP, EMP, EMP, EMP],
+                [EMP, 'a', EMP, EMP],
+                ['a', 'a', 'a', EMP],
+                [EMP, EMP, EMP, EMP],
             ],
 
-            'S' => vec![
-                vec![EMP, EMP, EMP, EMP],
-                vec![EMP, 'a', 'a', EMP],
-                vec!['a', 'a', EMP, EMP],
-                vec![EMP, EMP, EMP, EMP],
+            'S' => [
+                [EMP, EMP, EMP, EMP],
+                [EMP, 'a', 'a', EMP],
+                ['a', 'a', EMP, EMP],
+                [EMP, EMP, EMP, EMP],
             ],
 
             _ => panic!("Unknown shape: {}", shape),
@@ -110,19 +107,19 @@ impl Tetrominoe {
 
             'Z' => {
                 if self.state == 0 {
-                    self.shape = vec![
-                        vec![EMP, EMP, EMP, EMP],
-                        vec![EMP, EMP, 'a', EMP],
-                        vec![EMP, 'a', 'a', EMP],
-                        vec![EMP, 'a', EMP, EMP],
+                    self.shape = [
+                        [EMP, EMP, EMP, EMP],
+                        [EMP, EMP, 'a', EMP],
+                        [EMP, 'a', 'a', EMP],
+                        [EMP, 'a', EMP, EMP],
                     ];
                     self.state = 1;
                 } else {
-                    self.shape = vec![
-                        vec![EMP, EMP, EMP, EMP],
-                        vec!['a', 'a', EMP, EMP],
-                        vec![EMP, 'a', 'a', EMP],
-                        vec![EMP, EMP, EMP, EMP],
+                    self.shape = [
+                        [EMP, EMP, EMP, EMP],
+                        ['a', 'a', EMP, EMP],
+                        [EMP, 'a', 'a', EMP],
+                        [EMP, EMP, EMP, EMP],
                     ];
                     self.state = 0;
                 }
@@ -130,20 +127,20 @@ impl Tetrominoe {
 
             'S' => {
                 if self.state == 0 {
-                    self.shape = vec![
-                        vec![EMP, EMP, EMP, EMP],
-                        vec![EMP, 'a', EMP, EMP],
-                        vec![EMP, 'a', 'a', EMP],
-                        vec![EMP, EMP, 'a', EMP],
+                    self.shape = [
+                        [EMP, EMP, EMP, EMP],
+                        [EMP, 'a', EMP, EMP],
+                        [EMP, 'a', 'a', EMP],
+                        [EMP, EMP, 'a', EMP],
                     ];
 
                     self.state = 1;
                 } else {
-                    self.shape = vec![
-                        vec![EMP, EMP, EMP, EMP],
-                        vec![EMP, 'a', 'a', EMP],
-                        vec!['a', 'a', EMP, EMP],
-                        vec![EMP, EMP, EMP, EMP],
+                    self.shape = [
+                        [EMP, EMP, EMP, EMP],
+                        [EMP, 'a', 'a', EMP],
+                        ['a', 'a', EMP, EMP],
+                        [EMP, EMP, EMP, EMP],
                     ];
                     self.state = 0;
                 }
@@ -172,10 +169,8 @@ impl Tetrominoe {
     }
 }
 
-fn getrandom(end: u32) -> u32 {
-    let time_from_epoch = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-    Rand32::new(time_from_epoch).rand_range(0..end)
+fn getrandom(seed: u32) -> u32 {
+    let mut lcg = LCG::new(seed);
+    lcg.next();
+    lcg.next()
 }

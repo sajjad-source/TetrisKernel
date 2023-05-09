@@ -1,11 +1,14 @@
-use crate::gamescore::GameScore;
-use crate::tetrominoe::Tetrominoe;
-use crate::WIDTH;
-use crate::HEIGHT;
+use crate::tetris::tetrominoe::Tetrominoe;
+use crate::tetris::gamestate::GameState;
+use crate::tetris::game::{WIDTH, HEIGHT};
+use crate::{print, println};
+use crate::vga_buffer::{change_color, Color};
+
+use crate::keyboard::getch;
 
 pub const EMP: char = '.';
 
-pub fn render(gs: &mut GameState) {
+pub fn render(gs: &mut GameState, is_updated: bool) {
     if !is_updated {
         return;
     }
@@ -16,49 +19,41 @@ pub fn render(gs: &mut GameState) {
         for ch in row {
             match ch {
                 &EMP => {
-                    stdout.queue(Print(" .")).unwrap();
+                    print!(" .");
                 }
                 'a' => {
-                    stdout.queue(Print("[]")).unwrap();
+                    print!("[]");
                 }
                 'l' => {
-                    stdout.queue(Print("[]")).unwrap();
+                    print!("[]");
                 }
                 'g' => {
-                    stdout
-                        .queue(SetForegroundColor(Color::Rgb {
-                            r: 50,
-                            g: 50,
-                            b: 50,
-                        }))
-                        .unwrap()
-                        .queue(Print("//"))
-                        .unwrap()
-                        .queue(ResetColor)
-                        .unwrap();
+                    change_color(Color::DarkGray);
+                    print!("//");
+                    change_color(Color::White);
                 }
 
                 _ => panic!("unknown character: {}", ch),
             }
         }
-        stdout.queue(MoveTo(width + 3, (c + 2) as u16)).unwrap();
+        println!();
     }
 }
 
-pub fn init(width: usize, height: usize) -> [[char; WIDTH]; HEIGHT] {
-    let mut display: [[char; width]; height] = [[EMP; width]; height];
+pub fn init() -> [[char; WIDTH]; HEIGHT] {
+    let mut display: [[char; WIDTH]; HEIGHT] = [[EMP; WIDTH]; HEIGHT];
     display
 }
 
-pub fn gravity(gs: &mut GameScore) -> bool {
-    let prev_display = display.clone();
+pub fn gravity(gs: &mut GameState) -> bool {
+    let prev_display = gs.display.clone();
     for row in (0..gs.display.len()).rev() {
         for col in 0..gs.display[row].len() {
             if gs.display[row][col] == 'a' {
                 if row == gs.display.len() - 1 || gs.display[row + 1][col] == 'l' {
-                    *gs.display = prev_display;
+                    gs.display = prev_display;
                     landed(gs);
-                    let game_over = new_piece(gs, None);
+                    let game_over = new_piece(gs, Some(gs.next_piece.ptype));
                     return game_over;
                 }
 
@@ -71,7 +66,7 @@ pub fn gravity(gs: &mut GameScore) -> bool {
     false
 }
 
-pub fn handle_input(gs: &mut GameScore, key: char) {
+pub fn handle_input(gs: &mut GameState, key: char) {
     let prev_display = gs.display.clone();
     match key {
         'l' => {
@@ -79,7 +74,7 @@ pub fn handle_input(gs: &mut GameScore, key: char) {
                 for col in 0..gs.display[row].len() {
                     if gs.display[row][col] == 'a' {
                         if col == 0 || gs.display[row][col - 1] == 'l' {
-                            *gs.display = prev_display;
+                            gs.display = prev_display;
                             return;
                         }
                         gs.display[row][col] = EMP;
@@ -98,7 +93,7 @@ pub fn handle_input(gs: &mut GameScore, key: char) {
                 for col in (0..gs.display[row].len()).rev() {
                     if gs.display[row][col] == 'a' {
                         if col == gs.display[row].len() - 1 || gs.display[row][col + 1] == 'l' {
-                            *gs.display = prev_display;
+                            gs.display = prev_display;
                             return;
                         }
                         gs.display[row][col] = EMP;
@@ -111,7 +106,7 @@ pub fn handle_input(gs: &mut GameScore, key: char) {
 
         's' => {
             // bring down piece until new piece is created
-            while gs.display[0][display[0].len() / 2] == EMP {
+            while gs.display[0][gs.display[0].len() / 2] == EMP {
                 gravity(gs);
             }
         }
@@ -143,11 +138,11 @@ pub fn handle_input(gs: &mut GameScore, key: char) {
                 }
             }
 
-            for row in gs.active_piece.row..active_piece.row + 4 {
-                for col in gs.active_piece.col..active_piece.col + 4 {
+            for row in gs.active_piece.row..gs.active_piece.row + 4 {
+                for col in gs.active_piece.col..gs.active_piece.col + 4 {
                     if gs.display[row][col] == 'l' {
-                        *gs.display = prev_display;
-                        *gs.active_piece = prev_piece;
+                        gs.display = prev_display;
+                        gs.active_piece = prev_piece;
                         return;
                     }
 
@@ -171,7 +166,7 @@ pub fn new_piece(gs: &mut GameState, desired_piece: Option<char>) -> bool {
         return true;
     }
 
-    let piece = desired_piece.unwrap_or_else(|| get_next_piece(next_piece));
+    let piece = desired_piece.unwrap_or_else(|| get_next_piece(&mut gs.next_piece));
     match piece {
         'I' => {
             // I
@@ -242,7 +237,7 @@ pub fn new_piece(gs: &mut GameState, desired_piece: Option<char>) -> bool {
 }
 
 pub fn landed(gs: &mut GameState) {
-    for row in gs.display {
+    for row in &mut gs.display {
         for ch in row {
             if *ch == 'a' {
                 *ch = 'l';
@@ -264,18 +259,18 @@ pub fn full_line(gs: &mut GameState) {
     }
 
     for _ in 0..lines {
-        gs.display.insert(0, vec![EMP; gs.display[0].len()]); // add new line at the top
+        gs.display.insert(0, [EMP; WIDTH]); // add new line at the top
     }
 
     match lines {
-        1 => gs.score.score += 40 * (gs.score.level + 1),
-        2 => gs.score.score += 100 * (gs.score.level + 1),
-        3 => gs.score.score += 300 * (gs.score.level + 1),
-        4 => gs.score.score += 1200 * (gs.score.level + 1),
+        1 => gs.gamescore.score += 40 * (gs.gamescore.level + 1),
+        2 => gs.gamescore.score += 100 * (gs.gamescore.level + 1),
+        3 => gs.gamescore.score += 300 * (gs.gamescore.level + 1),
+        4 => gs.gamescore.score += 1200 * (gs.gamescore.level + 1),
         _ => (),
     }
 
-    score.level = score.score / 1000;
+    gs.gamescore.level = gs.gamescore.score / 1000;
 }
 
 pub fn ghost_piece(gs: &mut GameState) {
@@ -288,9 +283,9 @@ pub fn ghost_piece(gs: &mut GameState) {
     }
 
     let mut ghost = gs.display.clone();
-    let mut active_piece = active_piece.clone();
+    let mut active_piece = gs.active_piece.clone();
 
-    gravity_until_new_piece(&mut ghost, &mut active_piece);
+    gravity_until_new_piece(gs);
 
     for row in 0..ghost.len() {
         for col in 0..ghost[row].len() {
@@ -303,64 +298,29 @@ pub fn ghost_piece(gs: &mut GameState) {
 
 fn gravity_until_new_piece(gs: &mut GameState) {
     let mut prev_display = gs.display.clone();
-    gravity(gs, &mut Tetrominoe::random());
+    gravity(gs);
     while gs.display[0][gs.display[0].len() / 2] == EMP {
         prev_display = gs.display.clone();
-        gravity(gs, &mut Tetrominoe::random());
+        gravity(gs);
     }
-    *gs.display = prev_display;
+    gs.display = prev_display;
 }
 
 pub fn get_input() -> char {
-    loop {
-        if poll(Duration::from_millis(0)).unwrap() {
-            let input = event::read().unwrap();
-            match input {
-                Event::Key(KeyEvent {
-                    code: KeyCode::Char('q'),
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'q', // quit
-                Event::Key(KeyEvent {
-                    code: KeyCode::Char(' '),
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 's', // hard drop
-                Event::Key(KeyEvent {
-                    code: KeyCode::Char('c'),
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'c', // hold
-                Event::Key(KeyEvent {
-                    code: KeyCode::Char('p'),
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'p', // pause
-                Event::Key(KeyEvent {
-                    code: KeyCode::Left,
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'l', // move left
-                Event::Key(KeyEvent {
-                    code: KeyCode::Right,
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'r', // move right
-                Event::Key(KeyEvent {
-                    code: KeyCode::Up,
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'u', // rotate clockwise
-                Event::Key(KeyEvent {
-                    code: KeyCode::Down,
-                    kind: KeyEventKind::Press,
-                    ..
-                }) => return 'd', // soft drop
-                _ => (),
-            }
-        } else {
-            return ' ';
+    if let Some(key) = getch(&mut 0u8) {
+        match key {
+            'q' => return 'q', // quit
+            ' ' => return 's', // hard drop
+            'c' => return 'c', // hold
+            'p' => return 'p', // pause
+            'i' => return 'u', // rotate clockwise
+            'k' => return 'd', // soft drop
+            'j' => return 'l', // move left
+            'l' => return 'r', // move right
+            _ => return ' ',
         }
+    } else {
+        return ' ';
     }
 }
 
@@ -375,13 +335,13 @@ pub fn hold(gs: &mut GameState) {
     }
 
     // hold piece
-    if let Some(hold) = hold_piece {
-        let prev_piece = active_piece.clone();
-        new_piece(gs);
-        *hold_piece = Some(prev_piece);
+    if let Some(hold) = &gs.hold_piece {
+        let prev_piece = gs.active_piece.clone();
+        new_piece(gs, Some(hold.ptype));
+        gs.hold_piece = Some(prev_piece);
     } else {
-        *hold_piece = Some(active_piece.clone());
-        new_piece(gs);
+        gs.hold_piece = Some(gs.active_piece.clone());
+        new_piece(gs, None);
     }
 }
 
@@ -389,4 +349,41 @@ fn get_next_piece(next_piece: &mut Tetrominoe) -> char {
     let temp = next_piece.ptype;
     *next_piece = Tetrominoe::random();
     temp
+}
+
+trait Remove {
+    fn remove(&mut self, index: usize) -> Self;
+}
+
+trait Insert<T> {
+    fn insert(&mut self, index: usize, item: T) -> Result<(), &'static str>;
+}
+
+impl<T: Clone + Copy, const N: usize> Remove for [T; N] {
+    fn remove(&mut self, index: usize) -> Self {
+        let mut temp = self.clone();
+        temp[index] = temp[N - 1];
+        temp[N - 1] = self[index];
+        temp
+    }
+}
+
+impl<T, const N: usize> Insert<T> for [T; N]
+where
+    T: Copy + Default,
+{
+    fn insert(&mut self, index: usize, item: T) -> Result<(), &'static str> {
+        if index > N {
+            return Err("Index out of bounds");
+        }
+        
+        if index < N - 1 {
+            for i in (index + 1..N).rev() {
+                self[i] = self[i - 1];
+            }
+        }
+
+        self[index] = item;
+        Ok(())
+    }
 }
