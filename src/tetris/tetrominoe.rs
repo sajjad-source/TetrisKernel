@@ -1,6 +1,6 @@
-use crate::tetris::tetlib::EMP;
-use crate::tetris::game::{WIDTH, HEIGHT};
 use crate::random::rand;
+use crate::tetris::game::{HEIGHT, WIDTH};
+use crate::tetris::tetlib::EMP;
 
 #[derive(Clone)]
 pub struct Tetrominoe {

@@ -1,9 +1,9 @@
+use crate::keyboard::getch;
+use crate::tetris::game::{HEIGHT, WIDTH};
 use crate::tetris::gamescore::GameScore;
 use crate::tetris::tetrominoe::Tetrominoe;
-use crate::tetris::game::{WIDTH, HEIGHT};
-use crate::keyboard::getch;
 use crate::vga_buffer::clear_screen;
-use crate::vga_buffer::{WRITER, change_color, Color};
+use crate::vga_buffer::{change_color, Color, WRITER};
 use crate::{print, println};
 
 pub const EMP: char = '.';
@@ -324,10 +324,18 @@ pub fn ghost_piece(display: &mut [[char; WIDTH]; HEIGHT], active_piece: &mut Tet
 
 fn gravity_until_new_piece(display: &mut [[char; WIDTH]; HEIGHT], active_piece: &mut Tetrominoe) {
     let mut prev_display = display.clone();
-    gravity(display, active_piece, &mut Tetrominoe::random(2+active_piece.col));
+    gravity(
+        display,
+        active_piece,
+        &mut Tetrominoe::random(2 + active_piece.col),
+    );
     while display[0][display[0].len() / 2] == EMP {
         prev_display = display.clone();
-        gravity(display, active_piece, &mut Tetrominoe::random(2+active_piece.col));
+        gravity(
+            display,
+            active_piece,
+            &mut Tetrominoe::random(2 + active_piece.col),
+        );
     }
     *display = prev_display;
 }
@@ -378,7 +386,7 @@ pub fn hold(
 
 fn get_next_piece(next_piece: &mut Tetrominoe) -> char {
     let temp = next_piece.ptype;
-    *next_piece = Tetrominoe::random(next_piece.col+4);
+    *next_piece = Tetrominoe::random(next_piece.col + 4);
     temp
 }
 

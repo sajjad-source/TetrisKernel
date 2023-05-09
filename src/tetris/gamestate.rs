@@ -1,6 +1,6 @@
-use crate::tetris::tetlib::{new_piece,init};
+use crate::tetris::game::{HEIGHT, WIDTH};
+use crate::tetris::tetlib::{init, new_piece};
 use crate::tetris::{gamescore::GameScore, tetrominoe::Tetrominoe};
-use crate::tetris::game::{WIDTH, HEIGHT};
 
 #[derive(Clone)]
 pub struct GameState {

@@ -2,9 +2,9 @@
 #![no_main]
 
 mod keyboard;
+mod random;
 mod tetris;
 mod vga_buffer;
-mod random;
 use core::panic::PanicInfo;
 use tetris::game;
 

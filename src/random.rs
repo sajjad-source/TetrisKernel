@@ -4,7 +4,7 @@ pub fn rdtsc() -> u64 {
     let a: usize;
     let b: usize;
 
-    unsafe { 
+    unsafe {
         asm!(
             "rdtsc",
             out("eax") a,
