@@ -1,5 +1,5 @@
-use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 use core::arch::asm;
+use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 
 use crate::print;
 
@@ -25,9 +25,7 @@ pub fn getch(prev_scancode: &mut u8) -> Option<char> {
     *prev_scancode = scancode;
 
     if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-        if let Some(DecodedKey::Unicode(character)) =
-            keyboard.process_keyevent(key_event)
-        {
+        if let Some(DecodedKey::Unicode(character)) = keyboard.process_keyevent(key_event) {
             return Some(character);
         }
     }
@@ -54,5 +52,5 @@ pub fn getline() -> [char; BUFFER_SIZE] {
             None => {}
         }
     }
-    buffer 
+    buffer
 }

@@ -1,5 +1,5 @@
-use crate::tetris::tetlib::EMP;
 use crate::tetris::lcg::LCG;
+use crate::tetris::tetlib::EMP;
 
 #[derive(Clone)]
 pub struct Tetrominoe {
@@ -155,7 +155,7 @@ impl Tetrominoe {
     }
 
     pub fn random(seed: usize) -> Tetrominoe {
-        let ptype = match getrandom(7+seed) % 7 {
+        let ptype = match getrandom(7 + seed) % 7 {
             0 => 'I',
             1 => 'J',
             2 => 'L',

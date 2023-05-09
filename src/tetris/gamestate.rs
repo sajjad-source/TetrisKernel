@@ -1,9 +1,9 @@
-use crate::tetris::tetrominoe::Tetrominoe;
+use crate::print;
 use crate::tetris::gamescore::GameScore;
 use crate::tetris::tetlib::{init, new_piece};
-use crate::print;
+use crate::tetris::tetrominoe::Tetrominoe;
 
-use super::game::{WIDTH, HEIGHT};
+use super::game::{HEIGHT, WIDTH};
 
 #[derive(Clone)]
 pub struct GameState {

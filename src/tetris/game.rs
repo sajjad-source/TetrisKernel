@@ -1,8 +1,8 @@
 // Tetris
 
+use crate::print;
 use crate::tetris::gamestate::GameState;
 use crate::tetris::tetlib::*;
-use crate::print;
 
 pub const WIDTH: usize = 10;
 pub const HEIGHT: usize = 20;

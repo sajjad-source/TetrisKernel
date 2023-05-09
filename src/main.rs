@@ -1,11 +1,11 @@
 #![no_std]
 #![no_main]
 
-mod vga_buffer;
 mod keyboard;
 mod tetris;
-use tetris::game;
+mod vga_buffer;
 use core::panic::PanicInfo;
+use tetris::game;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {

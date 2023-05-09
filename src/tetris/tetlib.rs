@@ -1,8 +1,9 @@
-use crate::tetris::tetrominoe::Tetrominoe;
+use crate::tetris::game::{HEIGHT, WIDTH};
 use crate::tetris::gamestate::GameState;
-use crate::tetris::game::{WIDTH, HEIGHT};
+use crate::tetris::tetrominoe::Tetrominoe;
+use crate::vga_buffer::{change_color, clear_screen, Color};
 use crate::{print, println};
-use crate::vga_buffer::{change_color, Color, clear_screen};
+use crate::vga_buffer::WRITER;
 
 use crate::keyboard::getch;
 
@@ -39,6 +40,7 @@ pub fn render(gs: &mut GameState, is_updated: bool) {
         }
         println!();
     }
+    WRITER.lock().flush();
 }
 
 pub fn init() -> [[char; WIDTH]; HEIGHT] {
@@ -147,9 +149,11 @@ pub fn handle_input(gs: &mut GameState, key: char) {
                         return;
                     }
 
-                    if gs.active_piece.shape[row - gs.active_piece.row][col - gs.active_piece.col] == 'a' {
-                        gs.display[row][col] =
-                        gs.active_piece.shape[row - gs.active_piece.row][col - gs.active_piece.col];
+                    if gs.active_piece.shape[row - gs.active_piece.row][col - gs.active_piece.col]
+                        == 'a'
+                    {
+                        gs.display[row][col] = gs.active_piece.shape[row - gs.active_piece.row]
+                            [col - gs.active_piece.col];
                     }
                 }
             }
@@ -377,7 +381,7 @@ where
         if index > N {
             return Err("Index out of bounds");
         }
-        
+
         if index < N - 1 {
             for i in (index + 1..N).rev() {
                 self[i] = self[i - 1];

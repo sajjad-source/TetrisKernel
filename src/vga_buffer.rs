@@ -1,7 +1,7 @@
-use volatile::Volatile;
 use core::fmt::{self, Write};
 use lazy_static::lazy_static;
 use spin::Mutex;
+use volatile::Volatile;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,10 +50,15 @@ struct Buffer {
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
+struct DoubleBuffer {
+    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+}
+
 pub struct Writer {
     column_position: usize,
     pub color_code: ColorCode,
     buffer: &'static mut Buffer,
+    double_buffer: DoubleBuffer,
 }
 
 impl Writer {
@@ -69,20 +74,20 @@ impl Writer {
                 let col = self.column_position;
 
                 let color_code = self.color_code;
-                self.buffer.chars[row][col].write(ScreenChar {
+                self.double_buffer.chars[row][col] = ScreenChar {
                     ascii_character: byte,
                     color_code,
-                });
+                };
                 self.column_position += 1;
             }
         }
     }
 
     fn new_line(&mut self) {
-        for row in 1..BUFFER_HEIGHT { // start at 1 because we want to move every row up and 0 will be out of bounds
+        for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
-                let character = self.buffer.chars[row][col].read();
-                self.buffer.chars[row - 1][col].write(character)
+                let character = self.double_buffer.chars[row][col];
+                self.double_buffer.chars[row - 1][col] = character;
             }
         }
         self.clear_row(BUFFER_HEIGHT - 1);
@@ -96,7 +101,7 @@ impl Writer {
         };
 
         for col in 0..BUFFER_WIDTH {
-            self.buffer.chars[row][col].write(blank) // clears by writing space characters
+            self.double_buffer.chars[row][col] = blank;
         }
     }
 
@@ -107,6 +112,15 @@ impl Writer {
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
                 // not part of printable ASCII range
                 _ => self.write_byte(0xfe),
+            }
+        }
+    }
+
+    pub fn flush(&mut self) {
+        for row in 0..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                let screen_char = self.double_buffer.chars[row][col];
+                self.buffer.chars[row][col].write(screen_char);
             }
         }
     }
@@ -123,7 +137,13 @@ lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
         color_code: ColorCode::new(Color::White, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) }, // 0xb8000 is the start of the VGA buffer
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+        double_buffer: DoubleBuffer {
+            chars: [[ScreenChar {
+                ascii_character: b' ',
+                color_code: ColorCode::new(Color::White, Color::Black),
+            }; BUFFER_WIDTH]; BUFFER_HEIGHT],
+        },
     });
 }
 
@@ -141,7 +161,8 @@ macro_rules! println {
 // needs to be public so we can use it in other modules but private implementation detail
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
-    WRITER.lock().write_fmt(args).unwrap();
+    let mut writer = WRITER.lock();
+    writer.write_fmt(args).unwrap();
 }
 
 pub fn change_color(color: Color) {
