@@ -154,8 +154,8 @@ impl Tetrominoe {
         Tetrominoe::new().set(ptype).clone()
     }
 
-    pub fn random() -> Tetrominoe {
-        let ptype = match getrandom(7) {
+    pub fn random(seed: usize) -> Tetrominoe {
+        let ptype = match getrandom(7+seed) % 7 {
             0 => 'I',
             1 => 'J',
             2 => 'L',
@@ -169,8 +169,7 @@ impl Tetrominoe {
     }
 }
 
-fn getrandom(seed: u32) -> u32 {
+fn getrandom(seed: usize) -> usize {
     let mut lcg = LCG::new(seed);
-    lcg.next();
     lcg.next()
 }

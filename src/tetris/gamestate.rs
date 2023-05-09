@@ -24,7 +24,7 @@ impl GameState {
             active_piece: Tetrominoe::new(),
             gamescore: GameScore::new(),
             hold_piece: None,
-            next_piece: Tetrominoe::random(),
+            next_piece: Tetrominoe::random(3),
             counter: 0,
             is_game_over: false,
         };

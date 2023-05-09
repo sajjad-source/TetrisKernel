@@ -2,7 +2,7 @@ use crate::tetris::tetrominoe::Tetrominoe;
 use crate::tetris::gamestate::GameState;
 use crate::tetris::game::{WIDTH, HEIGHT};
 use crate::{print, println};
-use crate::vga_buffer::{change_color, Color};
+use crate::vga_buffer::{change_color, Color, clear_screen};
 
 use crate::keyboard::getch;
 
@@ -13,9 +13,10 @@ pub fn render(gs: &mut GameState, is_updated: bool) {
         return;
     }
 
-    let width: u16 = gs.display[0].len() as u16;
+    clear_screen();
+    let _width: u16 = gs.display[0].len() as u16;
 
-    for (c, row) in gs.display.iter().enumerate() {
+    for (_c, row) in gs.display.iter().enumerate() {
         for ch in row {
             match ch {
                 &EMP => {
@@ -41,7 +42,7 @@ pub fn render(gs: &mut GameState, is_updated: bool) {
 }
 
 pub fn init() -> [[char; WIDTH]; HEIGHT] {
-    let mut display: [[char; WIDTH]; HEIGHT] = [[EMP; WIDTH]; HEIGHT];
+    let display: [[char; WIDTH]; HEIGHT] = [[EMP; WIDTH]; HEIGHT];
     display
 }
 
@@ -347,7 +348,7 @@ pub fn hold(gs: &mut GameState) {
 
 fn get_next_piece(next_piece: &mut Tetrominoe) -> char {
     let temp = next_piece.ptype;
-    *next_piece = Tetrominoe::random();
+    *next_piece = Tetrominoe::random(next_piece.col);
     temp
 }
 

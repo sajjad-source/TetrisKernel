@@ -28,16 +28,11 @@ pub fn run() {
         }
 
         // gravity
-        if gs.counter >= 100_000_000 {
+        if gs.counter >= 100_000_000_000_000 {
             if gravity(&mut gs) {
                 gs.is_game_over = true;
                 break;
             }
-            gs.counter = if gs.gamescore.level < MAX_LEVEL {
-                0
-            } else {
-                100
-            };
         }
 
         // handle input

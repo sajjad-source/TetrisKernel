@@ -147,3 +147,9 @@ pub fn _print(args: fmt::Arguments) {
 pub fn change_color(color: Color) {
     WRITER.lock().color_code = ColorCode::new(color, Color::Black);
 }
+
+pub fn clear_screen() {
+    for _ in 0..BUFFER_HEIGHT {
+        println!();
+    }
+}
