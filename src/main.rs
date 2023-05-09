@@ -2,16 +2,15 @@
 #![no_main]
 
 mod vga_buffer;
-mod interrupts;
+mod keyboard;
+mod tetris;
+use tetris::tetris;
 use core::panic::PanicInfo;
-use crate::vga_buffer::{change_color, Color};
-
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    change_color(Color::Red);
     println!("Booting...\n");
-    let line = interrupts::getline();
+    tetris::run();
     println!("\nQuitting...\n");
     loop {}
 }
