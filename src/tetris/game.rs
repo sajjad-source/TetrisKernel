@@ -70,4 +70,5 @@ pub fn run() {
         WRITER.lock().flush();
         gs.counter += 1;
     }
+    return;
 }
