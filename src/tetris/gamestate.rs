@@ -1,9 +1,6 @@
-use crate::print;
-use crate::tetris::gamescore::GameScore;
-use crate::tetris::tetlib::{init, new_piece};
-use crate::tetris::tetrominoe::Tetrominoe;
-
-use super::game::{HEIGHT, WIDTH};
+use crate::tetris::tetlib::{new_piece,init};
+use crate::tetris::{gamescore::GameScore, tetrominoe::Tetrominoe};
+use crate::tetris::game::{WIDTH, HEIGHT};
 
 #[derive(Clone)]
 pub struct GameState {
@@ -18,7 +15,6 @@ pub struct GameState {
 
 impl GameState {
     pub fn new() -> Self {
-        print!("3");
         let mut gs = GameState {
             display: init(),
             active_piece: Tetrominoe::new(),
@@ -29,7 +25,12 @@ impl GameState {
             is_game_over: false,
         };
         init();
-        new_piece(&mut gs, None);
+        new_piece(
+            &mut gs.display,
+            &mut gs.active_piece,
+            None,
+            &mut gs.next_piece,
+        );
         gs
     }
 }

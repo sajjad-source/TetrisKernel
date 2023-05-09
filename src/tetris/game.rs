@@ -1,20 +1,16 @@
 // Tetris
-
-use crate::print;
 use crate::tetris::gamestate::GameState;
 use crate::tetris::tetlib::*;
+use crate::vga_buffer::WRITER;
 
 pub const WIDTH: usize = 10;
 pub const HEIGHT: usize = 20;
 
 pub fn run() {
-    print!("1");
-    const MAX_LEVEL: usize = 20;
-    const GRAV_TICK: usize = 40;
-    const LEVEL_MULT: f64 = 0.85;
+    const GRAV_TICK: usize = 50;
+
     let mut gs = GameState::new();
 
-    print!("2");
     // main loop
     loop {
         let prev_display = gs.display.clone();
@@ -28,35 +24,50 @@ pub fn run() {
         }
 
         // gravity
-        if gs.counter >= 100_000_000_000_000 {
-            if gravity(&mut gs) {
+        if gs.counter >= GRAV_TICK {
+            if gravity(&mut gs.display, &mut gs.active_piece, &mut gs.next_piece) {
                 gs.is_game_over = true;
                 break;
             }
+            gs.counter = 0;
         }
 
         // handle input
-        handle_input(&mut gs, key);
+        handle_input(
+            &mut gs.display,
+            key,
+            &mut gs.active_piece,
+            &mut gs.next_piece,
+        );
 
         // hold piece
         if key == 'c' {
-            hold(&mut gs);
+            hold(
+                &mut gs.display,
+                &mut gs.active_piece,
+                &mut gs.hold_piece,
+                &mut gs.next_piece,
+            );
         }
 
         // full line
-        full_line(&mut gs);
+        full_line(&mut gs.display, &mut gs.gamescore);
 
         // ghost piece
-        ghost_piece(&mut gs);
+        ghost_piece(&mut gs.display, &mut gs.active_piece);
 
         // check if gs.display was changed
         let is_updated = gs.display != prev_display || gs.is_game_over;
 
         // render
-        render(&mut gs, is_updated);
-        // sleep(Duration::from_millis(args.gravity));
+        render(
+            &gs.display,
+            is_updated,
+            &mut gs.gamescore,
+            &gs.hold_piece,
+            &gs.next_piece,
+        );
+        WRITER.lock().flush();
         gs.counter += 1;
     }
-
-    // print!("{}", "\n".repeat(HEIGHT / 2 + 4));
 }

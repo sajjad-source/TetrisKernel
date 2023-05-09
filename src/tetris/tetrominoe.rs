@@ -1,5 +1,6 @@
 use crate::tetris::lcg::LCG;
 use crate::tetris::tetlib::EMP;
+use crate::tetris::game::{WIDTH, HEIGHT};
 
 #[derive(Clone)]
 pub struct Tetrominoe {
@@ -171,5 +172,6 @@ impl Tetrominoe {
 
 fn getrandom(seed: usize) -> usize {
     let mut lcg = LCG::new(seed);
+    lcg.next();
     lcg.next()
 }
