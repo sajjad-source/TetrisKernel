@@ -1,7 +1,7 @@
 use core::arch::asm;
 use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
 
-use crate::print;
+use crate::{print, vga_buffer::WRITER};
 
 pub fn inb(port: u16) -> u8 {
     let data: u8;
@@ -46,6 +46,7 @@ pub fn getline() -> [char; BUFFER_SIZE] {
                 }
 
                 print!("{}", ch);
+                WRITER.lock().flush();
                 buffer[idx] = ch;
                 idx += 1;
             }

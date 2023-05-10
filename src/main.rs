@@ -8,11 +8,12 @@ mod vga_buffer;
 use core::panic::PanicInfo;
 use tetris::game;
 
-use crate::vga_buffer::WRITER;
+use crate::{vga_buffer::WRITER, keyboard::getline};
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Booting...\n");
+    getline();
     game::run();
     println!("\nQuitting...\n");
     WRITER.lock().flush();

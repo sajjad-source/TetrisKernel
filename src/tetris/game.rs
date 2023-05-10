@@ -10,13 +10,14 @@ pub fn run() {
     const GRAV_TICK: usize = 50;
 
     let mut gs = GameState::new();
+    let mut prev_scancode = 0; // required for key repeat
 
     // main loop
     loop {
         let prev_display = gs.display.clone();
 
         // handle input
-        let key = get_input();
+        let key = get_input(&mut prev_scancode);
 
         // quit
         if key == 'q' {

@@ -155,7 +155,7 @@ impl Tetrominoe {
         Tetrominoe::new().set(ptype).clone()
     }
 
-    pub fn random(seed: usize) -> Tetrominoe {
+    pub fn random() -> Tetrominoe {
         let ptype = match rand() % 7 {
             0 => 'I',
             1 => 'J',

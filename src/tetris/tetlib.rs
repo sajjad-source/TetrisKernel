@@ -285,7 +285,10 @@ pub fn full_line(display: &mut [[char; WIDTH]; HEIGHT], score: &mut GameScore) {
     }
 
     for _ in 0..lines {
-        display.insert(0, [EMP; WIDTH]); // add new line at the top
+        match display.insert(0, [EMP; WIDTH]) { // add new line at the top
+            Ok(_) => (),
+            Err(e) => panic!("{e}"),
+        }
     }
 
     match lines {
@@ -327,21 +330,21 @@ fn gravity_until_new_piece(display: &mut [[char; WIDTH]; HEIGHT], active_piece: 
     gravity(
         display,
         active_piece,
-        &mut Tetrominoe::random(2 + active_piece.col),
+        &mut Tetrominoe::random(),
     );
     while display[0][display[0].len() / 2] == EMP {
         prev_display = display.clone();
         gravity(
             display,
             active_piece,
-            &mut Tetrominoe::random(2 + active_piece.col),
+            &mut Tetrominoe::random(),
         );
     }
     *display = prev_display;
 }
 
-pub fn get_input() -> char {
-    if let Some(key) = getch(&mut 0u8) {
+pub fn get_input(mut prev_scancode: &mut u8) -> char {
+    if let Some(key) = getch(&mut prev_scancode) {
         match key {
             'q' => return 'q', // quit
             ' ' => return 's', // hard drop
@@ -386,7 +389,7 @@ pub fn hold(
 
 fn get_next_piece(next_piece: &mut Tetrominoe) -> char {
     let temp = next_piece.ptype;
-    *next_piece = Tetrominoe::random(next_piece.col + 4);
+    *next_piece = Tetrominoe::random();
     temp
 }
 
