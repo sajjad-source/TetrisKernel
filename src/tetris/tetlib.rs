@@ -2,9 +2,8 @@ use crate::keyboard::getch;
 use crate::tetris::game::{HEIGHT, WIDTH};
 use crate::tetris::gamescore::GameScore;
 use crate::tetris::tetrominoe::Tetrominoe;
-use crate::vga_buffer::clear_screen;
-use crate::vga_buffer::{change_color, Color, WRITER};
-use crate::{print, println};
+use crate::vga_buffer::{change_color, Color, WRITER, clear_screen};
+use crate::{print};
 
 pub const EMP: char = '.';
 
@@ -19,14 +18,8 @@ pub fn render(
         return;
     }
 
-    if !is_updated {
-        return;
-    }
-
-    clear_screen();
-    let _width: u16 = display[0].len() as u16;
-
-    for (_c, row) in display.iter().enumerate() {
+    WRITER.lock().move_to(WIDTH + 3, 1).unwrap(); // move cursor to top left
+    for (c, row) in display.iter().enumerate() {
         for ch in row {
             match ch {
                 &EMP => {
@@ -47,13 +40,79 @@ pub fn render(
                 _ => panic!("unknown character: {}", ch),
             }
         }
-        println!();
+        WRITER.lock().move_to(WIDTH + 3, c + 2).unwrap();
     }
+
+    // hold piece
+    WRITER.lock().move_to(2, 1).unwrap();
+    print!("Hold:");
+    WRITER.lock().move_to(2, 3).unwrap();
+    match hold_piece {
+        Some(piece) => {
+            let mut blank = Tetrominoe::new();
+            let upright = blank.set(piece.ptype);
+            for row in 0..upright.shape.len() {
+                for col in 0..upright.shape[row].len() {
+                    if upright.shape[row][col] == 'a' {
+                        print!("[]");
+                    } else {
+                        print!("  ")
+                    }
+                }
+                WRITER.lock().move_to(2, row + 4).unwrap();
+            }
+        }
+
+        None => (),
+    }
+
+    // print stats
+    WRITER.lock().move_to(WIDTH * 4, 1).unwrap();
+    print!("Score: {}", score.score);
+    WRITER.lock().move_to(WIDTH * 4, 3).unwrap();
+    print!("Level: {}", score.level);
+    WRITER.lock().move_to(WIDTH * 4, 5).unwrap();
+    let time = score.get_time();
+    print!("Time: {}", time);
+
+    // next piece
+    WRITER.lock().move_to(WIDTH * 4, 8).unwrap();
+    print!("Next:");
+    WRITER.lock().move_to(WIDTH * 4, 10).unwrap();
+    for row in 0..next_piece.shape.len() {
+        for col in 0..next_piece.shape[row].len() {
+            if next_piece.shape[row][col] == 'a' {
+                print!("[]");
+            } else {
+                print!("  ");
+            }
+        }
+        WRITER.lock().move_to(WIDTH * 4, row + 11).unwrap();
+    }
+
     WRITER.lock().flush();
 }
 
 pub fn init() -> [[char; WIDTH]; HEIGHT] {
     let display: [[char; WIDTH]; HEIGHT] = [[EMP; WIDTH]; HEIGHT];
+
+    // walls
+    clear_screen();
+    WRITER.lock().move_to(11, 1).unwrap(); // move cursor to top left while leaving space for hold
+    for row in display.iter().enumerate() {
+        print!("<!"); // left wall
+        for _ in row.1 {
+            print!("  ");
+        }
+        print!("!>"); // right wall
+        WRITER.lock().move_to(11, row.0 + 2).unwrap();
+    }
+    
+    print!("<!===================!>\r\n"); // bottom wall
+    print!("             \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/",); // bottom spikes
+    
+    WRITER.lock().flush();
+
     display
 }
 

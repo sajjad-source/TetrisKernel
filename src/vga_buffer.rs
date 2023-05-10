@@ -42,8 +42,8 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
+pub const BUFFER_HEIGHT: usize = 25;
+pub const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct Buffer {
@@ -56,6 +56,7 @@ struct DoubleBuffer {
 
 pub struct Writer {
     column_position: usize,
+    row_position: usize,
     pub color_code: ColorCode,
     buffer: &'static mut Buffer,
     double_buffer: DoubleBuffer,
@@ -70,7 +71,7 @@ impl Writer {
                     self.new_line();
                 }
 
-                let row = BUFFER_HEIGHT - 1;
+                let row = self.row_position;
                 let col = self.column_position;
 
                 let color_code = self.color_code;
@@ -124,6 +125,17 @@ impl Writer {
             }
         }
     }
+
+    pub fn move_to(&mut self, col: usize, row: usize) -> Option<()> {
+        if row >= BUFFER_HEIGHT || col >= BUFFER_WIDTH {
+            return None;
+        }
+
+        self.row_position = row+2; // +2 because I got no idea
+        self.column_position = col;
+
+        Some(())
+    }
 }
 
 impl fmt::Write for Writer {
@@ -136,6 +148,7 @@ impl fmt::Write for Writer {
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
+        row_position: BUFFER_HEIGHT - 1,
         color_code: ColorCode::new(Color::White, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
         double_buffer: DoubleBuffer {

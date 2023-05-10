@@ -1,5 +1,4 @@
 use crate::random::rand;
-use crate::tetris::game::{HEIGHT, WIDTH};
 use crate::tetris::tetlib::EMP;
 
 #[derive(Clone)]
