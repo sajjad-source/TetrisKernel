@@ -26,14 +26,14 @@ pub fn render(
                     print!(" .");
                 }
                 'a' => {
-                    print!("[]");
+                    print!("{}", 0xdb as char);
                 }
                 'l' => {
-                    print!("[]");
+                    print!("{}", 0xdb as char);
                 }
                 'g' => {
                     change_color(Color::DarkGray);
-                    print!("//");
+                    print!("{}", 0xdb as char);
                     change_color(Color::White);
                 }
 
@@ -54,7 +54,7 @@ pub fn render(
             for row in 0..upright.shape.len() {
                 for col in 0..upright.shape[row].len() {
                     if upright.shape[row][col] == 'a' {
-                        print!("[]");
+                        print!("{}", 0xdb as char);
                     } else {
                         print!("  ")
                     }
@@ -82,7 +82,7 @@ pub fn render(
     for row in 0..next_piece.shape.len() {
         for col in 0..next_piece.shape[row].len() {
             if next_piece.shape[row][col] == 'a' {
-                print!("[]");
+                print!("{}", 0xdb as char);
             } else {
                 print!("  ");
             }
