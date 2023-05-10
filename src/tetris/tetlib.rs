@@ -73,7 +73,7 @@ pub fn render(
     print!("Level: {}", score.level);
     WRITER.lock().move_to(WIDTH * 4, 5).unwrap();
     let time = score.get_time();
-    print!("Time: {}", time);
+    print!("Time: {}:{:02}", time/60, time%60);
 
     // next piece
     WRITER.lock().move_to(WIDTH * 4, 8).unwrap();
