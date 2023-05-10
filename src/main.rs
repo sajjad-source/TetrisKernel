@@ -15,11 +15,9 @@ use crate::{vga_buffer::WRITER, keyboard::getline};
 pub extern "C" fn _start() -> ! {
     WRITER.lock().move_to(0, 0);
     println!("Booting...\n");
-    WRITER.lock().flush();
     getline();
     game::run();
     println!("\nQuitting...\n");
-    WRITER.lock().flush();
     loop {}
 }
 

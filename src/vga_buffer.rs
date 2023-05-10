@@ -167,8 +167,8 @@ macro_rules! print {
 
 #[macro_export]
 macro_rules! println {
-    () => {$crate::print!("\n")};
-    ($($arg:tt)*) => {$crate::print!("{}\n", format_args!($($arg)*))}; // $crate means we don't need to import print! macro for println!
+    () => {$crate::print!("\n"); WRITER.lock().flush()};
+    ($($arg:tt)*) => {$crate::print!("{}\n", format_args!($($arg)*)); WRITER.lock().flush()}; // $crate means we don't need to import print! macro for println!
 }
 
 // needs to be public so we can use it in other modules but private implementation detail
