@@ -7,7 +7,7 @@ pub const WIDTH: usize = 10;
 pub const HEIGHT: usize = 20;
 
 pub fn run() {
-    const GRAV_TICK: usize = 50;
+    let mut grav_tick: usize = 100;
 
     let mut gs = GameState::new();
     let mut prev_scancode = 0; // required for key repeat
@@ -25,7 +25,7 @@ pub fn run() {
         }
 
         // gravity
-        if gs.counter >= GRAV_TICK {
+        if gs.counter >= grav_tick {
             if gravity(&mut gs.display, &mut gs.active_piece, &mut gs.next_piece) {
                 gs.is_game_over = true;
                 break;
@@ -56,6 +56,9 @@ pub fn run() {
 
         // ghost piece
         ghost_piece(&mut gs.display, &mut gs.active_piece);
+
+        // update grav_tick
+        grav_tick = 250 - gs.gamescore.level * 8;
 
         // check if gs.display was changed
         let is_updated = gs.display != prev_display || gs.is_game_over;
