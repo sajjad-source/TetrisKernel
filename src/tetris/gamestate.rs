@@ -2,7 +2,7 @@ use crate::tetris::game::{HEIGHT, WIDTH};
 use crate::tetris::tetlib::{init, new_piece};
 use crate::tetris::{gamescore::GameScore, tetrominoe::Tetrominoe};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct GameState {
     pub display: [[char; WIDTH]; HEIGHT],
     pub active_piece: Tetrominoe,

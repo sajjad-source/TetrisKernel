@@ -14,7 +14,7 @@ pub fn run() {
 
     // main loop
     loop {
-        let prev_display = gs.display.clone();
+        let prev_gs = gs.clone();
 
         // handle input
         let key = get_input(&mut prev_scancode);
@@ -61,7 +61,7 @@ pub fn run() {
         grav_tick = 250 - gs.gamescore.level * 8;
 
         // check if gs.display was changed
-        let is_updated = gs.display != prev_display || gs.is_game_over;
+        let is_updated = gs != prev_gs || gs.is_game_over;
 
         // render
         render(

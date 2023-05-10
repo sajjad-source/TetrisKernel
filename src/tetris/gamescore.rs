@@ -1,6 +1,6 @@
 use crate::cmos::get_time;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct GameScore {
     pub score: usize,
     pub level: usize,

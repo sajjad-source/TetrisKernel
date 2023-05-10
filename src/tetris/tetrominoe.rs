@@ -1,7 +1,7 @@
 use crate::random::rand;
 use crate::tetris::tetlib::EMP;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Tetrominoe {
     pub shape: [[char; 4]; 4],
     pub row: usize,
