@@ -409,10 +409,10 @@ pub fn get_input(mut prev_scancode: &mut u8) -> char {
             ' ' => return 's', // hard drop
             'c' => return 'c', // hold
             'p' => return 'p', // pause
-            'i' => return 'u', // rotate clockwise
-            'k' => return 'd', // soft drop
-            'j' => return 'l', // move left
-            'l' => return 'r', // move right
+            'i' | '8' => return 'u', // rotate clockwise (not sure why arrow keys are numbers)
+            'k' | '2' => return 'd', // soft drop
+            'j' | '4' => return 'l', // move left
+            'l' | '6' => return 'r', // move right
             _ => return ' ',
         }
     } else {
