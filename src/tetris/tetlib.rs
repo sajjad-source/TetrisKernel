@@ -13,6 +13,7 @@ pub fn render(
     score: &mut GameScore,
     hold_piece: &Option<Tetrominoe>,
     next_piece: &Tetrominoe,
+    grav_ticks: &usize
 ) {
     if !is_updated {
         return;
@@ -76,11 +77,13 @@ pub fn render(
     WRITER.lock().move_to(WIDTH * 4, 5).unwrap();
     let time = score.get_time();
     print!("Time: {}:{:02}", time/60, time%60);
+    WRITER.lock().move_to(WIDTH * 4, 7).unwrap();
+    print!("Grav: {}", grav_ticks);
 
     // next piece
-    WRITER.lock().move_to(WIDTH * 4, 8).unwrap();
-    print!("Next:");
     WRITER.lock().move_to(WIDTH * 4, 10).unwrap();
+    print!("Next:");
+    WRITER.lock().move_to(WIDTH * 4, 13).unwrap();
     for row in 0..next_piece.shape.len() {
         for col in 0..next_piece.shape[row].len() {
             if next_piece.shape[row][col] == 'a' {
@@ -92,7 +95,7 @@ pub fn render(
                 print!("  ");
             }
         }
-        WRITER.lock().move_to(WIDTH * 4, row + 11).unwrap();
+        WRITER.lock().move_to(WIDTH * 4, row + 14).unwrap();
     }
 
     WRITER.lock().flush();
@@ -151,6 +154,7 @@ pub fn handle_input(
     key: char,
     active_piece: &mut Tetrominoe,
     next_piece: &mut Tetrominoe,
+    grav_ticks: &mut usize,
 ) {
     let prev_display = display.clone();
     match key {
@@ -243,6 +247,15 @@ pub fn handle_input(
             }
         }
 
+        '-' => {
+            if *grav_ticks > 10 {
+                *grav_ticks -= 10;
+            }
+        }
+
+        '=' => {
+            *grav_ticks += 10;
+        }
         _ => (),
     }
 }
@@ -340,7 +353,7 @@ pub fn landed(display: &mut [[Tetrominoe; WIDTH]; HEIGHT]) {
     }
 }
 
-pub fn full_line(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], score: &mut GameScore) {
+pub fn full_line(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], score: &mut GameScore, grav_tick: &mut usize) {
     let mut lines: usize = 0;
     'outer: for row in (0..display.len()).rev() {
         for ch in &display[row] {
@@ -354,7 +367,7 @@ pub fn full_line(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], score: &mut GameSc
 
     for _ in 0..lines {
         match display.insert(0, [Tetrominoe::new(None, None); WIDTH]) { // add new line at the top
-            Ok(_) => (),
+            Ok(_) => *grav_tick = 250 - score.level * 8,
             Err(e) => panic!("{e}"),
         }
     }
@@ -422,6 +435,8 @@ pub fn get_input(mut prev_scancode: &mut u8) -> char {
             'k' | '2' => return 'd', // soft drop
             'j' | '4' => return 'l', // move left
             'l' | '6' => return 'r', // move right
+            '-' => return '-', // decrease speed
+            '=' => return '=', // increase speed
             _ => return ' ',
         }
     } else {
