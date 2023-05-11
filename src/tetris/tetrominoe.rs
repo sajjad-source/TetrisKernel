@@ -11,7 +11,8 @@ pub enum TColor {
     Blue,
     Magenta,
     Orange,
-    #[default] Empty,
+    #[default]
+    Empty,
 }
 
 #[derive(Clone, PartialEq, Debug, Copy, Default)]
@@ -19,7 +20,8 @@ pub enum State {
     Landed,
     Active,
     Ghost,
-    #[default] Empty,
+    #[default]
+    Empty,
 }
 
 #[derive(Clone, PartialEq, Debug, Copy, Default)]
@@ -49,58 +51,75 @@ impl Tetrominoe {
     pub fn set(&mut self, shape: char) -> &mut Self {
         self.ptype = shape;
         let shape = match shape {
-            'I' => { self.color = TColor::Cyan;
-            [
-                [EMP, 'a', EMP, EMP],
-                [EMP, 'a', EMP, EMP],
-                [EMP, 'a', EMP, EMP],
-                [EMP, 'a', EMP, EMP],
-            ]
-            },
-
-            'J' => { self.color = TColor::Blue; 
+            'I' => {
+                self.color = TColor::Cyan;
                 [
-                [EMP, 'a', EMP, EMP],
-                [EMP, 'a', EMP, EMP],
-                ['a', 'a', EMP, EMP],
-                [EMP, EMP, EMP, EMP],
-            ]
-        },
+                    [EMP, 'a', EMP, EMP],
+                    [EMP, 'a', EMP, EMP],
+                    [EMP, 'a', EMP, EMP],
+                    [EMP, 'a', EMP, EMP],
+                ]
+            }
 
-            'L' => { self.color = TColor::Orange; [
-                [EMP, 'a', EMP, EMP],
-                [EMP, 'a', EMP, EMP],
-                [EMP, 'a', 'a', EMP],
-                [EMP, EMP, EMP, EMP],
-            ]},
+            'J' => {
+                self.color = TColor::Blue;
+                [
+                    [EMP, 'a', EMP, EMP],
+                    [EMP, 'a', EMP, EMP],
+                    ['a', 'a', EMP, EMP],
+                    [EMP, EMP, EMP, EMP],
+                ]
+            }
 
-            'O' => {self.color = TColor::Yellow; [
-                [EMP, EMP, EMP, EMP],
-                [EMP, 'a', 'a', EMP],
-                [EMP, 'a', 'a', EMP],
-                [EMP, EMP, EMP, EMP],
-            ]},
+            'L' => {
+                self.color = TColor::Orange;
+                [
+                    [EMP, 'a', EMP, EMP],
+                    [EMP, 'a', EMP, EMP],
+                    [EMP, 'a', 'a', EMP],
+                    [EMP, EMP, EMP, EMP],
+                ]
+            }
 
-            'Z' => {self.color = TColor::Red; [
-                [EMP, EMP, EMP, EMP],
-                ['a', 'a', EMP, EMP],
-                [EMP, 'a', 'a', EMP],
-                [EMP, EMP, EMP, EMP],
-            ]},
+            'O' => {
+                self.color = TColor::Yellow;
+                [
+                    [EMP, EMP, EMP, EMP],
+                    [EMP, 'a', 'a', EMP],
+                    [EMP, 'a', 'a', EMP],
+                    [EMP, EMP, EMP, EMP],
+                ]
+            }
 
-            'T' => {self.color = TColor::Magenta;[
-                [EMP, EMP, EMP, EMP],
-                [EMP, 'a', EMP, EMP],
-                ['a', 'a', 'a', EMP],
-                [EMP, EMP, EMP, EMP],
-            ]},
+            'Z' => {
+                self.color = TColor::Red;
+                [
+                    [EMP, EMP, EMP, EMP],
+                    ['a', 'a', EMP, EMP],
+                    [EMP, 'a', 'a', EMP],
+                    [EMP, EMP, EMP, EMP],
+                ]
+            }
 
-            'S' => {self.color = TColor::Green; [
-                [EMP, EMP, EMP, EMP],
-                [EMP, 'a', 'a', EMP],
-                ['a', 'a', EMP, EMP],
-                [EMP, EMP, EMP, EMP],
-            ]},
+            'T' => {
+                self.color = TColor::Magenta;
+                [
+                    [EMP, EMP, EMP, EMP],
+                    [EMP, 'a', EMP, EMP],
+                    ['a', 'a', 'a', EMP],
+                    [EMP, EMP, EMP, EMP],
+                ]
+            }
+
+            'S' => {
+                self.color = TColor::Green;
+                [
+                    [EMP, EMP, EMP, EMP],
+                    [EMP, 'a', 'a', EMP],
+                    ['a', 'a', EMP, EMP],
+                    [EMP, EMP, EMP, EMP],
+                ]
+            }
 
             _ => panic!("Unknown shape: {}", shape),
         };
@@ -180,7 +199,7 @@ impl Tetrominoe {
     }
 
     pub fn from(ptype: char, state: Option<State>) -> Tetrominoe {
-        Tetrominoe::new(state, None).set(ptype).clone()
+        *Tetrominoe::new(state, None).set(ptype)
     }
 
     pub fn random() -> Tetrominoe {

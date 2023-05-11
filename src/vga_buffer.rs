@@ -132,7 +132,7 @@ impl Writer {
             return None;
         }
 
-        self.row_position = row+2; // +2 because I got no idea
+        self.row_position = row + 2; // +2 because I got no idea
         self.column_position = col;
 
         Some(())
@@ -175,7 +175,9 @@ macro_rules! println {
 // directly print a byte to the screen
 #[macro_export]
 macro_rules! dprint {
-    ($x:expr) => {WRITER.lock().write_byte($x)}; // $crate means we don't need to import print! macro for println!
+    ($x:expr) => {
+        WRITER.lock().write_byte($x)
+    }; // $crate means we don't need to import print! macro for println!
 }
 
 // needs to be public so we can use it in other modules but private implementation detail

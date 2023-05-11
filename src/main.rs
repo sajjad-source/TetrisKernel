@@ -1,15 +1,15 @@
 #![no_std]
 #![no_main]
 
+mod cmos;
 mod keyboard;
 mod random;
 mod tetris;
 mod vga_buffer;
-mod cmos;
 use core::panic::PanicInfo;
 use tetris::game;
 
-use crate::{vga_buffer::WRITER, keyboard::getline};
+use crate::{keyboard::getline, vga_buffer::WRITER};
 
 #[no_mangle]
 pub extern "C" fn _start() {
