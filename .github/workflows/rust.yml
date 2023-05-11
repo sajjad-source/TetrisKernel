@@ -20,6 +20,8 @@ jobs:
       run: rustup install nightly
     - name: Install Bootimage
       run: cargo install bootimage
+    - name: Set Environment to Nightly
+      run: rustup override set nightly 
     - name: Install LLVM Preview Tools
       run: rustup component add llvm-tools-preview
     - name: Install components for Core building
