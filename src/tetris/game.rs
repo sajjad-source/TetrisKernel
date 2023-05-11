@@ -3,8 +3,6 @@ use crate::tetris::gamestate::GameState;
 use crate::tetris::tetlib::*;
 use crate::vga_buffer::WRITER;
 
-use core::arch::asm;
-
 pub const WIDTH: usize = 10;
 pub const HEIGHT: usize = 20;
 
