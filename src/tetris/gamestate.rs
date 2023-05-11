@@ -4,7 +4,7 @@ use crate::tetris::{gamescore::GameScore, tetrominoe::Tetrominoe};
 
 #[derive(Clone, PartialEq)]
 pub struct GameState {
-    pub display: [[char; WIDTH]; HEIGHT],
+    pub display: [[Tetrominoe; WIDTH]; HEIGHT],
     pub active_piece: Tetrominoe,
     pub gamescore: GameScore,
     pub hold_piece: Option<Tetrominoe>,
@@ -17,7 +17,7 @@ impl GameState {
     pub fn new() -> Self {
         let mut gs = GameState {
             display: init(),
-            active_piece: Tetrominoe::new(),
+            active_piece: Tetrominoe::new(None, None),
             gamescore: GameScore::new(),
             hold_piece: None,
             next_piece: Tetrominoe::random(),

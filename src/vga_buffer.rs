@@ -172,6 +172,12 @@ macro_rules! println {
     ($($arg:tt)*) => {$crate::print!("{}\n", format_args!($($arg)*)); WRITER.lock().flush()}; // $crate means we don't need to import print! macro for println!
 }
 
+// directly print a byte to the screen
+#[macro_export]
+macro_rules! dprint {
+    ($x:expr) => {WRITER.lock().write_byte($x)}; // $crate means we don't need to import print! macro for println!
+}
+
 // needs to be public so we can use it in other modules but private implementation detail
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
