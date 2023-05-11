@@ -461,6 +461,14 @@ fn get_next_piece(next_piece: &mut Tetrominoe) -> char {
     temp
 }
 
+pub fn put_text(text: &str) {
+    let width = WIDTH * 2 - text.len() / 4;
+    WRITER.lock().move_to(width, HEIGHT / 2).unwrap();
+    change_color(Color::LightRed);
+    print!("{}", text);
+    change_color(Color::White);
+}
+
 trait Remove {
     fn remove(&mut self, index: usize) -> Self;
 }

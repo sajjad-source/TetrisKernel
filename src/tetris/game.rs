@@ -3,6 +3,8 @@ use crate::tetris::gamestate::GameState;
 use crate::tetris::tetlib::*;
 use crate::vga_buffer::WRITER;
 
+use core::arch::asm;
+
 pub const WIDTH: usize = 10;
 pub const HEIGHT: usize = 20;
 
@@ -22,6 +24,16 @@ pub fn run() {
         // quit
         if key == 'q' {
             break;
+        }
+
+        if key == 'p' {
+            let mut key = get_input(&mut prev_scancode);
+            put_text("P A U S E D");
+            WRITER.lock().flush();
+            while key != 'p' && key != 'q' {
+                key = get_input(&mut prev_scancode);
+                // unsafe { asm!("hlt") };
+            }
         }
 
         // gravity
@@ -74,5 +86,5 @@ pub fn run() {
         WRITER.lock().flush();
         gs.counter += 1;
     }
-    return;
+    put_text("G A M E  O V E R");
 }
