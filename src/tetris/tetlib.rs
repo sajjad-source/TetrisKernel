@@ -1,9 +1,9 @@
 use crate::keyboard::getch;
 use crate::tetris::game::{HEIGHT, WIDTH};
 use crate::tetris::gamescore::GameScore;
-use crate::tetris::tetrominoe::{Tetrominoe, State, TColor};
-use crate::vga_buffer::{change_color, Color, WRITER, clear_screen};
-use crate::{print, dprint};
+use crate::tetris::tetrominoe::{State, TColor, Tetrominoe};
+use crate::vga_buffer::{change_color, clear_screen, Color, WRITER};
+use crate::{dprint, print};
 
 pub const EMP: char = '.';
 
@@ -13,7 +13,7 @@ pub fn render(
     score: &mut GameScore,
     hold_piece: &Option<Tetrominoe>,
     next_piece: &Tetrominoe,
-    grav_ticks: &usize
+    grav_ticks: &usize,
 ) {
     if !is_updated {
         return;
@@ -76,7 +76,7 @@ pub fn render(
     print!("Level: {}", score.level);
     WRITER.lock().move_to(WIDTH * 4, 5).unwrap();
     let time = score.get_time();
-    print!("Time: {}:{:02}", time/60, time%60);
+    print!("Time: {}:{:02}", time / 60, time % 60);
     WRITER.lock().move_to(WIDTH * 4, 7).unwrap();
     print!("Grav: {}", grav_ticks);
 
@@ -115,10 +115,10 @@ pub fn init() -> [[Tetrominoe; WIDTH]; HEIGHT] {
         print!("!>"); // right wall
         WRITER.lock().move_to(11, row.0 + 2).unwrap();
     }
-    
+
     print!("<!===================!>\n"); // bottom wall
     print!("             \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/",); // bottom spikes
-    
+
     WRITER.lock().flush();
 
     display
@@ -129,7 +129,7 @@ pub fn gravity(
     active_piece: &mut Tetrominoe,
     next_piece: &mut Tetrominoe,
 ) -> bool {
-    let prev_display = display.clone();
+    let prev_display = *display;
     for row in (0..display.len()).rev() {
         for col in 0..display[row].len() {
             if display[row][col].game_state == State::Active {
@@ -156,7 +156,7 @@ pub fn handle_input(
     next_piece: &mut Tetrominoe,
     grav_ticks: &mut usize,
 ) {
-    let prev_display = display.clone();
+    let prev_display = *display;
     match key {
         'l' => {
             for row in (0..display.len()).rev() {
@@ -181,7 +181,9 @@ pub fn handle_input(
             for row in (0..display.len()).rev() {
                 for col in (0..display[row].len()).rev() {
                     if display[row][col].game_state == State::Active {
-                        if col == display[row].len() - 1 || display[row][col + 1].game_state == State::Landed {
+                        if col == display[row].len() - 1
+                            || display[row][col + 1].game_state == State::Landed
+                        {
                             *display = prev_display;
                             return;
                         }
@@ -206,7 +208,7 @@ pub fn handle_input(
 
         'u' => {
             // let prev_display = display.clone();
-            let prev_piece = active_piece.clone();
+            let prev_piece = *active_piece;
 
             // rotate piece
             active_piece.rotate();
@@ -236,11 +238,15 @@ pub fn handle_input(
                     }
 
                     if active_piece.shape[row - active_piece.row][col - active_piece.col] == 'a' {
-                        let new = active_piece.shape[row - active_piece.row][col - active_piece.col];
+                        let new =
+                            active_piece.shape[row - active_piece.row][col - active_piece.col];
                         match new {
                             EMP => display[row][col] = Tetrominoe::new(None, None),
-                            'a' => display[row][col] = Tetrominoe::new(Some(State::Active), Some(active_piece.color)),
-                            _ => panic!("Invalid character in rotation matrix")
+                            'a' => {
+                                display[row][col] =
+                                    Tetrominoe::new(Some(State::Active), Some(active_piece.color))
+                            }
+                            _ => panic!("Invalid character in rotation matrix"),
                         }
                     }
                 }
@@ -324,9 +330,11 @@ pub fn new_piece(
             // TT
             // T
             display[0][half_width] = Tetrominoe::new(Some(State::Active), Some(TColor::Magenta));
-            display[1][half_width - 1] = Tetrominoe::new(Some(State::Active), Some(TColor::Magenta));
+            display[1][half_width - 1] =
+                Tetrominoe::new(Some(State::Active), Some(TColor::Magenta));
             display[1][half_width] = Tetrominoe::new(Some(State::Active), Some(TColor::Magenta));
-            display[1][half_width + 1] = Tetrominoe::new(Some(State::Active), Some(TColor::Magenta));
+            display[1][half_width + 1] =
+                Tetrominoe::new(Some(State::Active), Some(TColor::Magenta));
         }
         'Z' => {
             //  ZZ
@@ -353,7 +361,11 @@ pub fn landed(display: &mut [[Tetrominoe; WIDTH]; HEIGHT]) {
     }
 }
 
-pub fn full_line(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], score: &mut GameScore, grav_tick: &mut usize) {
+pub fn full_line(
+    display: &mut [[Tetrominoe; WIDTH]; HEIGHT],
+    score: &mut GameScore,
+    grav_tick: &mut usize,
+) {
     let mut lines: usize = 0;
     'outer: for row in (0..display.len()).rev() {
         for ch in &display[row] {
@@ -366,7 +378,8 @@ pub fn full_line(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], score: &mut GameSc
     }
 
     for _ in 0..lines {
-        match display.insert(0, [Tetrominoe::new(None, None); WIDTH]) { // add new line at the top
+        match display.insert(0, [Tetrominoe::new(None, None); WIDTH]) {
+            // add new line at the top
             Ok(_) => *grav_tick = 250 - score.level * 8,
             Err(e) => panic!("{e}"),
         }
@@ -392,55 +405,53 @@ pub fn ghost_piece(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], active_piece: &m
         }
     }
 
-    let mut ghost = display.clone();
-    let mut active_piece = active_piece.clone();
+    let mut ghost = *display;
+    let mut active_piece = *active_piece;
 
     gravity_until_new_piece(&mut ghost, &mut active_piece);
 
     for row in 0..ghost.len() {
         for col in 0..ghost[row].len() {
-            if ghost[row][col].game_state == State::Active && display[row][col].game_state == State::Empty {
-                display[row][col] = Tetrominoe::new(Some(State::Ghost), Some(ghost[row][col].color));
+            if ghost[row][col].game_state == State::Active
+                && display[row][col].game_state == State::Empty
+            {
+                display[row][col] =
+                    Tetrominoe::new(Some(State::Ghost), Some(ghost[row][col].color));
             }
         }
     }
 }
 
-fn gravity_until_new_piece(display: &mut [[Tetrominoe; WIDTH]; HEIGHT], active_piece: &mut Tetrominoe) {
-    let mut prev_display = display.clone();
-    gravity(
-        display,
-        active_piece,
-        &mut Tetrominoe::random(),
-    );
+fn gravity_until_new_piece(
+    display: &mut [[Tetrominoe; WIDTH]; HEIGHT],
+    active_piece: &mut Tetrominoe,
+) {
+    let mut prev_display = *display;
+    gravity(display, active_piece, &mut Tetrominoe::random());
     while display[0][display[0].len() / 2].game_state == State::Empty {
-        prev_display = display.clone();
-        gravity(
-            display,
-            active_piece,
-            &mut Tetrominoe::random(),
-        );
+        prev_display = *display;
+        gravity(display, active_piece, &mut Tetrominoe::random());
     }
     *display = prev_display;
 }
 
 pub fn get_input(mut prev_scancode: &mut u8) -> char {
-    if let Some(key) = getch(&mut prev_scancode) {
+    if let Some(key) = getch(prev_scancode) {
         match key {
-            'q' => return 'q', // quit
-            ' ' => return 's', // hard drop
-            'c' => return 'c', // hold
-            'p' => return 'p', // pause
-            'i' | '8' => return 'u', // rotate clockwise (not sure why arrow keys are numbers)
-            'k' | '2' => return 'd', // soft drop
-            'j' | '4' => return 'l', // move left
-            'l' | '6' => return 'r', // move right
-            '-' => return '-', // decrease speed
-            '=' => return '=', // increase speed
-            _ => return ' ',
+            'q' => 'q',       // quit
+            ' ' => 's',       // hard drop
+            'c' => 'c',       // hold
+            'p' => 'p',       // pause
+            'i' | '8' => 'u', // rotate clockwise (not sure why arrow keys are numbers)
+            'k' | '2' => 'd', // soft drop
+            'j' | '4' => 'l', // move left
+            'l' | '6' => 'r', // move right
+            '-' => '-',       // decrease speed
+            '=' => '=',       // increase speed
+            _ => ' ',
         }
     } else {
-        return ' ';
+        ' '
     }
 }
 
@@ -461,11 +472,11 @@ pub fn hold(
 
     // hold piece
     if let Some(hold) = hold_piece {
-        let prev_piece = active_piece.clone();
+        let prev_piece = *active_piece;
         new_piece(display, active_piece, Some(hold.ptype), next_piece);
         *hold_piece = Some(prev_piece);
     } else {
-        *hold_piece = Some(active_piece.clone());
+        *hold_piece = Some(*active_piece);
         new_piece(display, active_piece, None, next_piece);
     }
 }
@@ -494,7 +505,7 @@ trait Insert<T> {
 
 impl<T: Clone + Copy, const N: usize> Remove for [T; N] {
     fn remove(&mut self, index: usize) -> Self {
-        let mut temp = self.clone();
+        let mut temp = *self;
         temp[index] = temp[N - 1];
         temp[N - 1] = self[index];
         temp

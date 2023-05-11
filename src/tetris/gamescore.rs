@@ -9,7 +9,11 @@ pub struct GameScore {
 
 impl GameScore {
     pub fn new() -> GameScore {
-        GameScore { score: 0, level: 0, elapsed_time: get_time() }
+        GameScore {
+            score: 0,
+            level: 0,
+            elapsed_time: get_time(),
+        }
     }
 
     pub fn get_time(&mut self) -> usize {
