@@ -109,15 +109,6 @@ impl Tetrominoe {
         self
     }
 
-    pub fn set_state(&mut self, state: char) {
-        match state {
-            'l' => self.game_state = State::Landed,
-            'a' => self.game_state = State::Active,
-            'g' => self.game_state = State::Ghost,
-            _ => panic!("Unknown state: {}", state),
-        }
-    }
-
     pub fn set_pos(&mut self, row: usize, col: usize) {
         self.row = row;
         self.col = col;

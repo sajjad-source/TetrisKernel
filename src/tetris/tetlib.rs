@@ -18,7 +18,7 @@ pub fn render(
         return;
     }
 
-    WRITER.lock().move_to(WIDTH + 3, 1).unwrap(); // move cursor to top left
+    WRITER.lock().move_to(WIDTH + 3, 0).unwrap(); // move cursor to top left
     for (c, row) in display.iter().enumerate() {
         for ch in row {
             match ch.game_state {
@@ -39,7 +39,7 @@ pub fn render(
                 }
             }
         }
-        WRITER.lock().move_to(WIDTH + 3, c + 2).unwrap();
+        WRITER.lock().move_to(WIDTH + 3, c + 1).unwrap();
     }
 
     // hold piece
@@ -113,7 +113,7 @@ pub fn init() -> [[Tetrominoe; WIDTH]; HEIGHT] {
         WRITER.lock().move_to(11, row.0 + 2).unwrap();
     }
     
-    print!("<!===================!>\r\n"); // bottom wall
+    print!("<!===================!>\n"); // bottom wall
     print!("             \\/\\/\\/\\/\\/\\/\\/\\/\\/\\/",); // bottom spikes
     
     WRITER.lock().flush();
