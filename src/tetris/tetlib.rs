@@ -374,15 +374,8 @@ pub fn full_line(
             }
         }
         display.remove(row);
+        *grav_tick = 250 - score.level * 8;
         lines += 1;
-    }
-
-    for _ in 0..lines {
-        match display.insert(0, [Tetrominoe::new(None, None); WIDTH]) {
-            // add new line at the top
-            Ok(_) => *grav_tick = 250 - score.level * 8,
-            Err(e) => panic!("{e}"),
-        }
     }
 
     match lines {
@@ -435,7 +428,7 @@ fn gravity_until_new_piece(
     *display = prev_display;
 }
 
-pub fn get_input(mut prev_scancode: &mut u8) -> char {
+pub fn get_input(prev_scancode: &mut u8) -> char {
     if let Some(key) = getch(prev_scancode) {
         match key {
             'q' => 'q',       // quit
@@ -496,38 +489,21 @@ pub fn put_text(text: &str) {
 }
 
 trait Remove {
-    fn remove(&mut self, index: usize) -> Self;
+    fn remove(&mut self, index: usize) -> Option<()>;
 }
 
-trait Insert<T> {
-    fn insert(&mut self, index: usize, item: T) -> Result<(), &'static str>;
-}
-
-impl<T: Clone + Copy, const N: usize> Remove for [T; N] {
-    fn remove(&mut self, index: usize) -> Self {
-        let mut temp = *self;
-        temp[index] = temp[N - 1];
-        temp[N - 1] = self[index];
-        temp
-    }
-}
-
-impl<T, const N: usize> Insert<T> for [T; N]
-where
-    T: Copy + Default,
-{
-    fn insert(&mut self, index: usize, item: T) -> Result<(), &'static str> {
-        if index > N {
-            return Err("Index out of bounds");
-        }
-
-        if index < N - 1 {
-            for i in (index + 1..N).rev() {
-                self[i] = self[i - 1];
+impl<T: Default, const N: usize> Remove for [T; N] {
+    fn remove(&mut self, index: usize) -> Option<()> {
+        if index < N {
+            // Replace the element at the index with the default value
+            self[index] = T::default();
+            // Shift all elements before the index up by 1
+            for i in (1..=index).rev() {
+                self.swap(i, i - 1);
             }
+            Some(())
+        } else {
+            None
         }
-
-        self[index] = item;
-        Ok(())
     }
 }
