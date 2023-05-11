@@ -1,83 +1,121 @@
 use crate::random::rand;
 use crate::tetris::tetlib::EMP;
+use crate::vga_buffer::Color;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug, Copy, Default)]
+pub enum TColor {
+    Cyan,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Orange,
+    #[default] Empty,
+}
+
+#[derive(Clone, PartialEq, Debug, Copy, Default)]
+pub enum State {
+    Landed,
+    Active,
+    Ghost,
+    #[default] Empty,
+}
+
+#[derive(Clone, PartialEq, Debug, Copy, Default)]
 pub struct Tetrominoe {
     pub shape: [[char; 4]; 4],
     pub row: usize,
     pub col: usize,
     pub ptype: char,
-    state: usize,
+    pub color: TColor,
+    pub game_state: State,
+    rotation_state: usize,
 }
 
 impl Tetrominoe {
-    pub fn new() -> Tetrominoe {
+    pub fn new(state: Option<State>, color: Option<TColor>) -> Tetrominoe {
         Tetrominoe {
             shape: [[EMP; 4]; 4],
             row: 0,
             col: 0,
             ptype: ' ',
-            state: 0,
+            color: color.unwrap_or(TColor::Empty),
+            game_state: state.unwrap_or(State::Empty),
+            rotation_state: 0,
         }
     }
 
     pub fn set(&mut self, shape: char) -> &mut Self {
         self.ptype = shape;
         let shape = match shape {
-            'I' => [
+            'I' => { self.color = TColor::Cyan;
+            [
                 [EMP, 'a', EMP, EMP],
                 [EMP, 'a', EMP, EMP],
                 [EMP, 'a', EMP, EMP],
                 [EMP, 'a', EMP, EMP],
-            ],
+            ]
+            },
 
-            'J' => [
+            'J' => { self.color = TColor::Blue; 
+                [
                 [EMP, 'a', EMP, EMP],
                 [EMP, 'a', EMP, EMP],
                 ['a', 'a', EMP, EMP],
                 [EMP, EMP, EMP, EMP],
-            ],
+            ]
+        },
 
-            'L' => [
+            'L' => { self.color = TColor::Orange; [
                 [EMP, 'a', EMP, EMP],
                 [EMP, 'a', EMP, EMP],
                 [EMP, 'a', 'a', EMP],
                 [EMP, EMP, EMP, EMP],
-            ],
+            ]},
 
-            'O' => [
+            'O' => {self.color = TColor::Yellow; [
                 [EMP, EMP, EMP, EMP],
                 [EMP, 'a', 'a', EMP],
                 [EMP, 'a', 'a', EMP],
                 [EMP, EMP, EMP, EMP],
-            ],
+            ]},
 
-            'Z' => [
+            'Z' => {self.color = TColor::Red; [
                 [EMP, EMP, EMP, EMP],
                 ['a', 'a', EMP, EMP],
                 [EMP, 'a', 'a', EMP],
                 [EMP, EMP, EMP, EMP],
-            ],
+            ]},
 
-            'T' => [
+            'T' => {self.color = TColor::Magenta;[
                 [EMP, EMP, EMP, EMP],
                 [EMP, 'a', EMP, EMP],
                 ['a', 'a', 'a', EMP],
                 [EMP, EMP, EMP, EMP],
-            ],
+            ]},
 
-            'S' => [
+            'S' => {self.color = TColor::Green; [
                 [EMP, EMP, EMP, EMP],
                 [EMP, 'a', 'a', EMP],
                 ['a', 'a', EMP, EMP],
                 [EMP, EMP, EMP, EMP],
-            ],
+            ]},
 
             _ => panic!("Unknown shape: {}", shape),
         };
         self.shape = shape;
-        self.state = 0;
+        self.rotation_state = 0;
         self
+    }
+
+    pub fn set_state(&mut self, state: char) {
+        match state {
+            'l' => self.game_state = State::Landed,
+            'a' => self.game_state = State::Active,
+            'g' => self.game_state = State::Ghost,
+            _ => panic!("Unknown state: {}", state),
+        }
     }
 
     pub fn set_pos(&mut self, row: usize, col: usize) {
@@ -106,14 +144,14 @@ impl Tetrominoe {
             }
 
             'Z' => {
-                if self.state == 0 {
+                if self.rotation_state == 0 {
                     self.shape = [
                         [EMP, EMP, EMP, EMP],
                         [EMP, EMP, 'a', EMP],
                         [EMP, 'a', 'a', EMP],
                         [EMP, 'a', EMP, EMP],
                     ];
-                    self.state = 1;
+                    self.rotation_state = 1;
                 } else {
                     self.shape = [
                         [EMP, EMP, EMP, EMP],
@@ -121,12 +159,12 @@ impl Tetrominoe {
                         [EMP, 'a', 'a', EMP],
                         [EMP, EMP, EMP, EMP],
                     ];
-                    self.state = 0;
+                    self.rotation_state = 0;
                 }
             }
 
             'S' => {
-                if self.state == 0 {
+                if self.rotation_state == 0 {
                     self.shape = [
                         [EMP, EMP, EMP, EMP],
                         [EMP, 'a', EMP, EMP],
@@ -134,7 +172,7 @@ impl Tetrominoe {
                         [EMP, EMP, 'a', EMP],
                     ];
 
-                    self.state = 1;
+                    self.rotation_state = 1;
                 } else {
                     self.shape = [
                         [EMP, EMP, EMP, EMP],
@@ -142,7 +180,7 @@ impl Tetrominoe {
                         ['a', 'a', EMP, EMP],
                         [EMP, EMP, EMP, EMP],
                     ];
-                    self.state = 0;
+                    self.rotation_state = 0;
                 }
             }
 
@@ -150,8 +188,8 @@ impl Tetrominoe {
         }
     }
 
-    pub fn from(ptype: char) -> Tetrominoe {
-        Tetrominoe::new().set(ptype).clone()
+    pub fn from(ptype: char, state: Option<State>) -> Tetrominoe {
+        Tetrominoe::new(state, None).set(ptype).clone()
     }
 
     pub fn random() -> Tetrominoe {
@@ -165,6 +203,19 @@ impl Tetrominoe {
             6 => 'S',
             _ => panic!("Invalid random number"),
         };
-        Tetrominoe::from(ptype)
+        Tetrominoe::from(ptype, None)
+    }
+
+    pub fn as_color(&self) -> Color {
+        match self.color {
+            TColor::Cyan => Color::Cyan,
+            TColor::Blue => Color::Blue,
+            TColor::Orange => Color::Brown,
+            TColor::Yellow => Color::Yellow,
+            TColor::Red => Color::Red,
+            TColor::Magenta => Color::Magenta,
+            TColor::Green => Color::Green,
+            TColor::Empty => Color::Black,
+        }
     }
 }

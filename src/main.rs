@@ -12,13 +12,12 @@ use tetris::game;
 use crate::{vga_buffer::WRITER, keyboard::getline};
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn _start() {
     WRITER.lock().move_to(0, 0);
     println!("Booting...\n");
     getline();
     game::run();
     println!("\nQuitting...\n");
-    loop {}
 }
 
 /// This function is called on panic.
