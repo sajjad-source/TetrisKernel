@@ -16,7 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose --config .cargo/config.toml
+    - name: Install Nightly Toolchain
+      run: rustup install nightly
+    - name: Install Bootimage
+      run: cargo install bootimage
     - name: Build Bootloader
-      run: cargo install bootimage && cargo bootimage
+      run: rustup run nightly cargo bootimage --release --config .cargo/config.toml
